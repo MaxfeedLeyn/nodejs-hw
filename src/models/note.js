@@ -1,6 +1,6 @@
 import { Schema } from "mongoose";
 
-const noteSchema = new Schema(
+const Note = new Schema(
   {
     title: {
       type: String,
