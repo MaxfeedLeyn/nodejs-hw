@@ -7,7 +7,7 @@ import {
   updateNote,
 } from '../controllers/notesController.js';
 import { celebrate } from 'celebrate';
-import { getAllNotesSchema, noteIdSchema, createNoteSchema, updateNoteSchema } from '../validations/noteValidation.js';
+import { getAllNotesSchema, noteIdSchema, createNoteSchema, updateNoteSchema } from '../validations/noteValidations.js';
 
 const router = Router();
 
