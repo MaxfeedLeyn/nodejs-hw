@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import handlebars from 'handlebars';
-import { sendMail } from '../utils/sendMail.js';
+import { sendEmail } from '../utils/sendMail.js';
 import { User } from '../models/user.js';
 import { Session } from '../models/session.js';
 import createHttpError from 'http-errors';
@@ -25,6 +25,8 @@ export const registerUser = async (req, res) => {
     password: hashedPassword,
   });
 
+  await newUser.save();
+
   const newSession = await createSession(newUser._id);
 
   setSessionCookies(res, newSession);
@@ -37,12 +39,12 @@ export const loginUser = async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new createHttpError(400, 'Invalid credentials');
+    throw new createHttpError(401, 'Invalid credentials');
   }
 
   const isValidPassword = await bcrypt.compare(password, user.password);
   if (!isValidPassword) {
-    throw new createHttpError(400, 'Invalid credentials');
+    throw new createHttpError(401, 'Invalid credentials');
   }
 
   await Session.deleteOne({ userId: user._id });
@@ -119,18 +121,18 @@ export const requestResetEmail = async (req, res) => {
   const template = handlebars.compile(templateSource);
   const html = template({
     name: user.username,
-    link: `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`,
+    link: `${process.env.FRONTEND_DOMAIN}/reset-password?token=${resetToken}`,
   })
 
   try {
-    await sendMail({
+    await sendEmail({
       from: process.env.SMTP_FROM,
       to: email,
       subject: 'Reset your password',
       html,
     })
   } catch {
-    throw new createHttpsError(500, 'Failed to send the email, please try again later.');
+    throw new createHttpError(500, 'Failed to send the email, please try again later.');
   }
 
   res.status(200).json({ message: 'Password reset email sent successfully' });
