@@ -13,16 +13,16 @@ export const authenticate = async (req, res, next) => {
     throw new createHttpError(401, 'Session not found');
   }
 
-  const isAccessTokenValid = new Date() > new Date(session.accessTokenValidUntil);
+  const isAccessTokenValid = new Date() < new Date(session.accessTokenValidUntil);
 
-  if (isAccessTokenValid) {
+  if (!isAccessTokenValid) {
     throw new createHttpError(401, 'Access token expired');
   }
 
   const user = await User.findById(session.userId);
 
   if (!user) {
-    throw new createHttpError(401, 'User not found');
+    throw new createHttpError(401);
   }
 
   req.user = user;

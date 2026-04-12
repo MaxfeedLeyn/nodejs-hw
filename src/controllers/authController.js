@@ -20,6 +20,8 @@ export const registerUser = async (req, res) => {
     password: hashedPassword,
   });
 
+  await newUser.save();
+
   const newSession = await createSession(newUser._id);
 
   setSessionCookies(res, newSession);
@@ -32,12 +34,12 @@ export const loginUser = async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new createHttpError(400, 'Invalid credentials');
+    throw new createHttpError(401, 'Invalid credentials');
   }
 
   const isValidPassword = await bcrypt.compare(password, user.password);
   if (!isValidPassword) {
-    throw new createHttpError(400, 'Invalid credentials');
+    throw new createHttpError(401, 'Invalid credentials');
   }
 
   await Session.deleteOne({ userId: user._id });
